@@ -6,7 +6,7 @@ import { Clock, BookOpen } from 'lucide-react'
 
 const courses = [
   { 
-    id: 1, 
+    id: "1", 
     title: 'Intro to Cryptocurrency',
     description: 'An introduction to the world of cryptocurrency, covering topics like how crypto works, investing strategies, and mistakes to avoid.',
     image: 'https://learn.swyftx.com/wp-content/uploads/2022/07/Introduction-to-cryptocurrency-500x333.png',
@@ -16,7 +16,7 @@ const courses = [
     color: 'bg-blue-500'
   },
   { 
-    id: 2, 
+    id: "2", 
     title: 'Intro to Bitcoin',
     description: 'An introduction to Bitcoin, which covers what Bitcoin is and how it works, as well as exploring topics such as Bitcoin mining and Bitcoin halving.',
     image: 'https://learn.swyftx.com/wp-content/uploads/2022/07/Intro-to-bitcoin-500x333.png',
@@ -26,7 +26,7 @@ const courses = [
     color: 'bg-green-800'
   },
   { 
-    id: 3, 
+    id: "3", 
     title: 'Trading and Analysis',
     description: 'A look at trading and analysis, exploring topics like market cycles, trading strategies, technical analysis, and fundamental analysis.',
     image: 'https://learn.swyftx.com/wp-content/uploads/2023/05/Trading-and-analysis-500x333.png',
@@ -42,8 +42,8 @@ export default function Courses() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-grow container mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold mb-8 text-center">Available Courses</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <h1 className="text-4xl font-bold mb-8 text-center text-black">Available Courses</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-gray-500">
           {courses.map((course) => (
             <Link key={course.title} href={`/courses/${course.id}`}>
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg h-full">

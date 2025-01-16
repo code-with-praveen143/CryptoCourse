@@ -1,11 +1,12 @@
+'use client'
 import Header from '@/app/components/Header';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Clock, BookOpen } from 'lucide-react';
 
 const courses = [
   {
-    id: 1,
+    id: "1",
     title: 'Introduction to Blockchain',
     description: 'Learn the basics of blockchain technology',
     level: 'Beginner',
@@ -17,7 +18,7 @@ const courses = [
     ],
   },
   {
-    id: 2,
+    id: "2",
     title: 'Cryptocurrency Fundamentals',
     description: 'Understand the core concepts of cryptocurrencies',
     level: 'Beginner',
@@ -27,11 +28,28 @@ const courses = [
       { id: 2, title: 'Bitcoin: The First Cryptocurrency', duration: 9 },
       { id: 3, title: 'Altcoins and Tokens', duration: 10 },
     ],
+  },
+  {
+    id: "3",
+    title: 'Trading and Analysis',
+    description: 'A look at trading and analysis, exploring topics like market cycles, trading strategies, technical analysis, and fundamental analysis.',
+    level: 'Beginner',
+    image: 'https://learn.swyftx.com/wp-content/uploads/2023/05/Trading-and-analysis-500x333.png',
+    lessons: [
+      { id: 1, title: 'What is Cryptocurrency?', duration: 8 },
+      { id: 2, title: 'Bitcoin: The First Cryptocurrency', duration: 9 },
+      { id: 3, title: 'Altcoins and Tokens', duration: 10 },
+    ],
   }
 ];
 
-export default function Course({ params }: { params: { id: string } }) {
-  const course = courses.find((c) => c.id === parseInt(params.id));
+type Course = {
+  id: string;
+}
+
+export default function Course() {
+  const params = useParams();
+  const course = courses.find((c) => c.id === params.id);
 
   if (!course) {
     notFound();
