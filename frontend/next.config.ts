@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
         pathname: '/wp-content/**',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'https://res.cloudinary.com/',
+        port: '',
+        pathname: '/dpzpn3dkw/image/**',
+        search: '',
+      }
     ],
   },
 };

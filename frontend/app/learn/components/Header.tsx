@@ -2,11 +2,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Button } from "../components/ui/button"
-import { Search, ChevronDown } from 'lucide-react'
+import { ChevronDown, LogOut, Settings } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
- 
-
+import Image from 'next/image'
+import Profile from '../../../public/images/Profile.jpeg'
 const categories = [
   { name: 'Altcoins', href: '/categories/altcoins' },
   { name: 'Bitcoin', href: '/categories/bitcoin' },
@@ -22,21 +21,25 @@ const categories = [
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
-
+  const user = {
+    username: 'John Doe',
+    email: 'jhondoe@gmail.com',
+  }
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold">swyftx</span>
-            <span className="text-xl text-blue-600">Learn</span>
+            <span className="text-[32px] font-bold font-sans">Token</span>
+            <span className="text-xl font-norma text-blue-600">|</span>
+            <span className="text-[28px] text-blue-600">Disc</span>
           </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/learn-and-earn" 
+            <Link
+              href="/learn-and-earn"
               className="text-sm font-medium text-gray-700 hover:text-gray-900"
             >
               Learn and Earn
@@ -44,7 +47,7 @@ export default function Header() {
                 New
               </span>
             </Link>
-            
+
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900">
                 Categories
@@ -64,15 +67,15 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link 
-              href="/courses" 
+            <Link
+              href="/courses"
               className="text-sm font-medium text-gray-700 hover:text-gray-900"
             >
               Courses
             </Link>
-            
-            <Link 
-              href="/analysis" 
+
+            <Link
+              href="/analysis"
               className="text-sm font-medium text-gray-700 hover:text-gray-900"
             >
               Analysis
@@ -81,30 +84,40 @@ export default function Header() {
 
           {/* Right side */}
           <div className="flex items-center space-x-6">
-            <button className="text-gray-600 hover:text-gray-900">
-              <Search className="h-5 w-5" />
-            </button>
-            
-            <Link 
-              href="/signup" 
-              className="hidden md:block text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Sign up
-            </Link>
-            
-            <Button 
-              variant="outline" 
-              className="hidden md:inline-flex items-center text-blue-600 border-blue-600 hover:bg-blue-50"
-              asChild
-            >
-              <Link href="/login">
-                Login
-              </Link>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 space-x-2">
+                <Image
+                  src={Profile}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="rounded-full"
+                />
+                <span>{user.username}</span>
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem>
+                  <Link href="/settings" className="text-sm">
+                    <Settings className='w-4 h-4 mr-2' />Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <button
+                    onClick={() => {
+                      // Handle logout
+                      console.log('Logout');
+                    }}
+                    className="text-sm w-full text-left"
+                  >
+                    <LogOut className='w-4 h-4 mr-2' />Logout
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
     </header>
   )
 }
-

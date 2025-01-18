@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Header from '../components/Header'
-import { Input } from '../components/ui/input'
-import { Button } from '../components/ui/button'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Bitcoin, Lock } from 'lucide-react'
+import Header from '../learn/components/Header'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../learn/components/ui/card'
+import { Input } from '../learn/components/ui/input'
+import { Button } from '../learn/components/ui/button'
 
 export default function Login() {
   const [email, setEmail] = useState('')
