@@ -9,7 +9,7 @@ export default function Hero() {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="max-w-xl">
             <h1 className="sm:text-[40px] font-light font-sans tracking-tight text-[#13151b]">
-              Welcome to Swyftx Learn
+              Welcome to Token Disc
             </h1>
             <p className="mt-4 text-[16px] font-sans text-[#000]">
               There is a vast world of information about cryptocurrency and blockchain. Access a full platform full of high-quality, crypto-related resources and insights.

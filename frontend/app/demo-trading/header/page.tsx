@@ -3,15 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+
 import Image from "next/image";
 import Profile from "../../../public/images/Profile.jpeg";
 import { useRouter } from "next/navigation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/app/learn/components/ui/dropdown-menu";
 const categories = [
   { name: "Altcoins", href: "/categories/altcoins" },
   { name: "Bitcoin", href: "/categories/bitcoin" },
@@ -59,43 +55,10 @@ export default function Header() {
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/learn-and-earn"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900"
+              href="/demo-trading/dashboard"
+              className="text-md hover:underline hover:text-[#1113d4] font-medium text-gray-800"
             >
-              Learn and Earn
-              <span className="ml-1 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-800">
-                New
-              </span>
-            </Link>
-
-            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-              <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                Categories
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {categories.map((category) => (
-                  <DropdownMenuItem key={category.href}>
-                    <Link href={category.href} className="w-full text-sm">
-                      {category.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Link
-              href="/courses"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Courses
-            </Link>
-
-            <Link
-              href="/analysis"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Analysis
+              Dashboard
             </Link>
           </nav>
 

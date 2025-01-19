@@ -1,16 +1,10 @@
-import React from 'react';
-import DemoHeader from './components/demoheader';
-import TradingForm from './components/tradingform';
-import TradingStats from './components/tradingstats';
-import TradingFooter from './components/tradingfooter';
-
-export default function DemoTradingPage() {
+import Dashboard from "./dashboard/page";
+import Header from "./header/page";
+export default function Home() {
   return (
-    <div>
-      <DemoHeader />
-      <TradingForm />
-      <TradingStats />
-      <TradingFooter />
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <Dashboard />
     </div>
   );
 }
