@@ -33,7 +33,7 @@ const getCurrentPriceString = async (req, res) => {
   try {
     const response = await fetch(apiLink);
     const data = await response.json();
-    res.json(data[0].price_usd);
+    res.json({price: data[0].price_usd});
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch price" });

@@ -55,7 +55,11 @@ exports.verifyBalance = async (req, res, next) => {
     }
 
     if (req.body.value > user.balance) {
-      await createLog(req.body.username, "Verify balance", "Insufficient funds");
+      await createLog(
+        req.body.username,
+        "Verify balance",
+        "Insufficient funds"
+      );
       return res.status(404).send({ message: "Insufficient funds." });
     }
 
@@ -78,7 +82,11 @@ exports.verifyCoins = async (req, res, next) => {
     const user = await User.findOne({ username: req.body.username }).exec();
 
     if (!user) {
-      await createLog(req.body.username, "Verify coin balance", "User not found");
+      await createLog(
+        req.body.username,
+        "Verify coin balance",
+        "User not found"
+      );
       return res.status(404).send({ message: "User Not found." });
     }
 
@@ -98,16 +106,25 @@ exports.verifyCoins = async (req, res, next) => {
     };
 
     const response = await exchange.getCurrentPrice(req.body.coin);
-    const coinsSold = parseFloat(req.body.value) / parseFloat(response.data[0].price_usd);
+    const coinsSold =
+      parseFloat(req.body.value) / parseFloat(response.price_usd);
     const coinBalance = userCoins[req.body.coin];
 
     if (coinsSold > coinBalance) {
-      await createLog(req.body.username, "Verify coin balance", "Insufficient funds");
+      await createLog(
+        req.body.username,
+        "Verify coin balance",
+        "Insufficient funds"
+      );
       return res.status(404).send({ message: "Insufficient funds." });
     }
 
     if (req.body.value <= 0) {
-      await createLog(req.body.username, "Verify coin balance", "Negative value");
+      await createLog(
+        req.body.username,
+        "Verify coin balance",
+        "Negative value"
+      );
       return res.status(404).send({ message: "Ernsthaft??" });
     }
 
@@ -125,12 +142,28 @@ exports.verifyCoins = async (req, res, next) => {
 exports.buy = async (req, res) => {
   try {
     const coin = req.body.coin;
-    const response = await exchange.getCurrentPrice(coin);
-    const coinsBought = parseFloat(req.body.value) / parseFloat(response.data[0].price_usd);
 
+    // Fetch the current price of the coin
+    const response = await exchange.getCurrentPrice(coin);
+
+    // Log the raw API response for debugging
+    // console.log("Raw API response:", response);
+
+    const priceData = Array.isArray(response) ? response[0] : response;
+
+    if (!priceData.price_usd) {
+      throw new Error(`Price data missing for coin: ${coin}`);
+    }
+
+    // Calculate coins bought
+    const coinsBought =
+      parseFloat(req.body.value) / parseFloat(priceData.price_usd);
+
+    // Build update query
     let updateQuery = { balance: -req.body.value };
     updateQuery[coin] = coinsBought;
 
+    // Update the user's balance and coin holdings
     const user = await User.findOneAndUpdate(
       { username: req.body.username },
       { $inc: updateQuery },
@@ -142,12 +175,18 @@ exports.buy = async (req, res) => {
       return res.status(404).send({ message: "User Not found." });
     }
 
-    await createLog(req.body.username, "Buy", `Successful. Bought: ${coinsBought} of ${coin}`);
+    // Log success and respond
+    await createLog(
+      req.body.username,
+      "Buy",
+      `Successful. Bought: ${coinsBought} of ${coin}`
+    );
     res.status(200).send({
       balance: user.balance,
       coinsBought: coinsBought,
     });
   } catch (err) {
+    // Log error and respond with the error message
     await createLog(req.body.username, "Buy", err.message);
     return res.status(500).send({ message: err.message });
   }
@@ -156,32 +195,58 @@ exports.buy = async (req, res) => {
 // Updates database after selling coins and returns new balance and coin balance
 exports.sell = async (req, res) => {
   try {
-    const coinsSold = req.coinsSold;
-    let updateQuery = { balance: req.body.value };
-    updateQuery[req.body.coin] = -coinsSold;
+    const { username, coin, value, coinsSold } = req.body;
+    console.log(coinsSold)
+    // Build update query
+    const updateQuery = { balance: parseFloat(value) };
+    updateQuery[coin] = -coinsSold;
 
-    const user = await User.findOneAndUpdate(
-      { username: req.body.username },
+    // Update user's balance and coin holdings
+    const updatedUser = await User.findOneAndUpdate(
+      { username },
       { $inc: updateQuery },
       { new: true }
     ).exec();
 
-    if (!user) {
-      await createLog(req.body.username, "Sell", "User not found");
-      return res.status(404).send({ message: "User Not found." });
+    if (!updatedUser) {
+      await Logs.create({
+        username,
+        email: "not provided",
+        time: new Date(),
+        action: "Sell",
+        status: "User not found after update",
+      });
+      return res.status(404).send({ message: "User not found after update." });
     }
 
-    await createLog(req.body.username, "Sell", `Successful. Sold ${coinsSold} of ${req.body.coin}`);
+    // Log success and respond
+    await Logs.create({
+      username,
+      email: "not provided",
+      time: new Date(),
+      action: "Sell",
+      status: `Successful. Sold ${coinsSold} of ${coin}`,
+    });
+
     res.status(200).send({
-      balance: user.balance,
-      newCoinBalance: req.coinBalance - coinsSold,
-      coinsSold: coinsSold,
+      balance: updatedUser.balance,
+      newCoinBalance: updatedUser[coin],
+      coinsSold,
     });
   } catch (err) {
-    await createLog(req.body.username, "Sell", err.message);
+    await Logs.create({
+      username: req.body.username,
+      email: "not provided",
+      time: new Date(),
+      action: "Sell",
+      status: err.message,
+    });
     return res.status(500).send({ message: err.message });
   }
 };
+
+
+
 
 // Calculates the complete value of the user's portfolio
 exports.getUserValue = async (req, res) => {
@@ -215,7 +280,11 @@ exports.getUserValue = async (req, res) => {
       userValue += userCoins[coin] * response.data[0].price_usd;
     }
 
-    await createLog(req.body.username, "Get user value", `Successful. User value: ${userValue}`);
+    await createLog(
+      req.body.username,
+      "Get user value",
+      `Successful. User value: ${userValue}`
+    );
     res.status(200).send({
       username: user.username,
       balance: user.balance,
