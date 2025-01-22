@@ -7,6 +7,7 @@ const LogsSchema = new mongoose.Schema({
   time: { type: Date, required: true },
   action: { type: String, required: true },
   status: { type: String, required: true },
+  details: { type: String }, // Optional details for debugging
 });
 
 module.exports = mongoose.model("Logs", LogsSchema);

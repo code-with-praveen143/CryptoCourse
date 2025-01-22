@@ -7,6 +7,7 @@ import Header from "../../components/Header";
 import courses from "@/app/data/course";
 import Profile from "../../../../public/alternative_placeholder.svg";
 import { Clock } from "lucide-react";
+import { User } from "@/app/types/type";
 
 // Define TypeScript interfaces for the course and lessons
 interface QuizQuestion {
@@ -39,7 +40,8 @@ interface Course {
 export default function Course() {
   const params = useParams();
   const course: any = courses.find((c) => c.id === params.id);
-
+  const [user, setUser] = useState<User>();
+  console.log("User: " + user?._id)
   if (!course) {
     notFound();
   }
@@ -63,24 +65,73 @@ export default function Course() {
     setCurrentQuizIndex(0);
   };
 
+  const fetchCurrentUser = async (token: string) => {
+    try {
+      const response = await fetch("http://localhost:5000/auth/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user details.");
+      }
+
+      const userData = await response.json();
+       setUser(userData.user);
+    } catch (err) {
+      console.error("Error fetching current user:", err);
+    }
+  };
+
   const handleQuizAnswer = (questionIndex: number, answer: string) => {
     setQuizAnswers((prev) => ({ ...prev, [questionIndex]: answer }));
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     if (!selectedLesson) return;
-
+    fetchCurrentUser(`${localStorage.getItem('auth_token')}`)
     const correctAnswers = selectedLesson.quiz.filter(
       (question, index) => quizAnswers[index] === question.correctAnswer
     );
-
+  
     if (correctAnswers.length === selectedLesson.quiz.length) {
-      setUserPoints((prev) => prev + correctAnswers.length * 10);
-      setQuizCompleted(true);
+      const score = correctAnswers.length;
+  
+      try {
+        const response = await fetch('http://localhost:5000/api/quiz/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: user?._id, // Replace with the actual user ID
+            course_id: course.id,
+            lesson_id: selectedLesson.id,
+            score: score,
+            total_questions: selectedLesson.quiz.length,
+          }),
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          setUserPoints((prev) => prev + data.pointsEarned);
+          setQuizCompleted(true);
+          alert('Quiz completed successfully! Points awarded.');
+        } else {
+          const error = await response.json();
+          alert(`Error: ${error.message}`);
+        }
+      } catch (error) {
+        console.error('Error submitting quiz:', error);
+        alert('Something went wrong while submitting the quiz.');
+      }
     } else {
-      alert("Please answer all questions correctly to proceed!");
+      alert('Please answer all questions correctly to proceed!');
     }
   };
+  
 
   const handleNextLesson = () => {
     if (!selectedLesson) return;

@@ -1,6 +1,8 @@
 const User = require("../models/user.model");
 const Logs = require("../models/logs.model");
 const exchange = require("../controllers/exchangeController");
+const Activity = require('../models/activity.model');
+const PointsLedger = require('../models/points.model');
 // Utility function to create logs
 const createLog = async (username, action, status, email = "not provided") => {
   await Logs.create({
@@ -12,6 +14,61 @@ const createLog = async (username, action, status, email = "not provided") => {
   });
 };
 
+exports.completeActivity = async (req, res) => {
+  try {
+    const { user_id, type, reference_id, points } = req.body;
+
+    const user = await User.findById(user_id);
+    if (!user) {
+      await createLog('unknown', 'Complete Activity', 'User not found');
+      return res.status(404).send({ message: 'User not found.' });
+    }
+
+    // Log the activity
+    const activity = await Activity.create({
+      user_id,
+      type,
+      reference_id,
+      points,
+    });
+
+    // Update user's total points
+    await User.findByIdAndUpdate(user_id, { $inc: { balance: points } });
+
+    // Add to points ledger
+    await PointsLedger.create({
+      user_id,
+      activity_id: activity._id,
+      points,
+    });
+
+    await createLog(user.username, 'Complete Activity', 'Successful', `Type: ${type}, Points: ${points}`);
+
+    res.status(200).send({ message: 'Activity completed and points awarded!' });
+  } catch (error) {
+    await createLog('unknown', 'Complete Activity', 'Failed', error.message);
+    res.status(500).send({ message: error.message });
+  }
+}
+
+exports.getUserPoints = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // Fetch the user's points
+    const user = await User.findById(user_id).select('balance username');
+    if (!user) {
+      await createLog('unknown', 'Get User Points', 'User not found');
+      return res.status(404).send({ message: 'User not found.' });
+    }
+
+    await createLog(user.username, 'Get User Points', 'Successful');
+    res.status(200).send({ username: user.username, balance: user.balance });
+  } catch (error) {
+    await createLog('unknown', 'Get User Points', 'Failed', error.message);
+    res.status(500).send({ message: error.message });
+  }
+};
 // Receives username from frontend and returns complete portfolio
 exports.getUserBalance = async (req, res) => {
   try {
@@ -43,6 +100,23 @@ exports.getUserBalance = async (req, res) => {
     return res.status(500).send({ message: err.message });
   }
 };
+
+// Get Active Users from the database
+exports.getActiveUsers = async (req, res) => {
+  try {
+    const now = new Date();
+    const dailyCutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const monthlyCutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const dailyActiveUsers = await User.countDocuments({ last_login_date: { $gte: dailyCutoff } });
+    const monthlyActiveUsers = await User.countDocuments({ last_login_date: { $gte: monthlyCutoff } });
+
+    res.status(200).send({ dailyActiveUsers, monthlyActiveUsers });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
 
 // Verifies if user has sufficient balance
 exports.verifyBalance = async (req, res, next) => {

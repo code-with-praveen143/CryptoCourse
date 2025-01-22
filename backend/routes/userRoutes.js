@@ -3,8 +3,6 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const authMiddleware = require("../middleware/authmiddleware");
 
-// Routes
-
 // Get user balance
 router.post("/balance", authMiddleware, userController.getUserBalance);
 
@@ -22,5 +20,11 @@ router.post("/sell", authMiddleware, userController.verifyCoins, userController.
 
 // Get user portfolio value
 router.post("/portfolio-value", authMiddleware, userController.getUserValue);
+
+// Get user points
+router.get('/points/:user_id', authMiddleware, userController.getUserPoints);
+
+// Get Active Users
+router.get('/active', userController.getActiveUsers);
 
 module.exports = router;

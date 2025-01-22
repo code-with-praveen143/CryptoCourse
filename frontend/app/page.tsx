@@ -1,9 +1,11 @@
 // File: app/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
+import { ChevronDown, Gift, LogOut, Settings, UserCircle, X } from "lucide-react";
+import Lottie from "react-lottie-player";
+import rewardAnimation from "../public/animations/reward.json";
 import Image from "next/image";
 import {
   DropdownMenu,
@@ -47,20 +49,54 @@ const cardData = [
 ];
 
 const HomePage = () => {
-  const [user, setUser] = useState({ username: "Guest", email: "" });
+  const [user, setUser] = useState({ username: "Guest", email: "", points: 0 });
   const router = useRouter();
+  const [showPopup, setShowPopup] = useState(false);
+
+    const fetchPoints = useCallback(async (user_id) => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/user/points/${user_id}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+          if (data.balance !== undefined) {
+            setUser((prev) => ({ ...prev, points: data.balance }));
+          }
+        } else {
+          console.error("Failed to fetch user points:", response.statusText);
+        }
+      } catch (error: any) {
+        console.error("Error fetching user points:", error.message);
+      }
+    }, []);
+    
   useEffect(() => {
     // Fetch user details from localStorage
     const username = localStorage.getItem("username") || "Guest";
     const email = localStorage.getItem("email") || "";
-    setUser({ username, email });
-  }, []);
+    const userId = localStorage.getItem("user_id");  
+    if (userId) {
+      fetchPoints(userId);
+    }
+
+    setUser((prev) => ({ ...prev, username, email }));
+  }, [fetchPoints]);
+
+
   const handleLogout = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("email");
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user");
-    setUser({ username: "Guest", email: "" });
+    setUser({ username: "Guest", email: "", points: 0 });
     router.push('/login');
   };
   return (
@@ -92,8 +128,8 @@ const HomePage = () => {
                   height={32}
                   className="rounded-full"
                 />
-                <span>{user.username}</span>
-                <ChevronDown className="h-4 w-4" />
+                {/* <span>{user.username}</span> */}
+                {/* <ChevronDown className="h-4 w-4" /> */}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem className="flex items-center space-x-2">
@@ -109,6 +145,15 @@ const HomePage = () => {
                     className="text-sm w-full text-left"
                   >
                     Logout
+                  </button>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center space-x-2">
+                  <Gift className="w-4 h-4" />
+                  <button
+                  onClick={() => setShowPopup(true)}
+                  className="text-sm w-full text-left"
+                >
+                    Points
                   </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -166,6 +211,36 @@ const HomePage = () => {
             </div>
           ))}
         </div>
+        {showPopup && (
+        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center p-4">
+          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute -top-4 -right-4 bg-white text-gray-500 hover:text-gray-800 rounded-full p-2 shadow-md"
+              aria-label="Close points popup"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <Lottie loop animationData={rewardAnimation} play className="h-40 mx-auto" />
+            <h2 className="text-center text-xl font-bold text-gray-800 mt-4">Available Points: {user.points}</h2>
+            <p className="text-center text-gray-600 mt-4">
+              Earn more points by exploring our learning portal or redeem your points for exciting rewards!
+            </p>
+            <div className="flex justify-around mt-6">
+              <Link href="/learn">
+                <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+                  Learn More
+                </button>
+              </Link>
+              <Link href="/redeem">
+                <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                  Redeem Points
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
       </main>
     </div>
   );

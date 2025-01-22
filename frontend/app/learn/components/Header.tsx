@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
 import {
@@ -12,6 +12,8 @@ import {
 import Image from "next/image";
 import Profile from "../../../public/images/Profile.jpeg";
 import { useRouter } from "next/navigation";
+
+
 const categories = [
   { name: "Altcoins", href: "/categories/altcoins" },
   { name: "Bitcoin", href: "/categories/bitcoin" },
@@ -26,23 +28,58 @@ const categories = [
 ];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState({ username: "Guest", email: "" });
+  const [user, setUser] = useState({
+    username: "Guest",
+    email: "",
+    balance: 0,
+  });
   const router = useRouter();
+
+  const fetchPoints = useCallback(async (user_id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/user/points/${user_id}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        if (data.balance !== undefined) {
+          setUser((prev) => ({ ...prev, balance: data.balance }));
+        }
+      } else {
+        console.error("Failed to fetch user points:", response.statusText);
+      }
+    } catch (error: any) {
+      console.error("Error fetching user points:", error.message);
+    }
+  }, []);
+
   useEffect(() => {
     // Fetch user details from localStorage
     const username = localStorage.getItem("username") || "Guest";
     const email = localStorage.getItem("email") || "";
-    setUser({ username, email });
-  }, []);
+    const userId = localStorage.getItem("user_id");  
+    if (userId) {
+      fetchPoints(userId);
+    }
+
+    setUser((prev) => ({ ...prev, username, email }));
+  }, [fetchPoints]);
 
   const handleLogout = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("email");
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_id");
     localStorage.removeItem("user");
-    setUser({ username: "Guest", email: "" });
-    router.push('/login');
+    setUser({ username: "Guest", email: "", balance: 0 });
+    router.push("/login");
   };
 
   return (
@@ -68,7 +105,7 @@ export default function Header() {
               </span>
             </Link>
 
-            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+            <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900">
                 Categories
                 <ChevronDown className="ml-1 h-4 w-4" />
@@ -101,6 +138,12 @@ export default function Header() {
 
           {/* Right side */}
           <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 text-sm font-medium">Points:</span>
+              <span className="text-blue-600 text-sm font-bold">
+                {user.balance}
+              </span>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 space-x-2">
                 <Image
@@ -110,8 +153,8 @@ export default function Header() {
                   height={32}
                   className="rounded-full"
                 />
-                <span>{user.username}</span>
-                <ChevronDown className="h-4 w-4" />
+                {/* <span>{user.username}</span>
+                <ChevronDown className="h-4 w-4" /> */}
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem className="flex items-center space-x-2">

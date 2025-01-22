@@ -37,7 +37,8 @@ const UserSchema = new mongoose.Schema({
   preferences: {
     notifications: { type: Boolean, default: true },
     dark_mode: { type: Boolean, default: false }
-  }
+  },
+  last_login_date: { type: Date, default: null } 
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
