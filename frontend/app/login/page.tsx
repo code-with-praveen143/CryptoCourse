@@ -9,7 +9,8 @@ import * as z from "zod"
 import { Input } from "../learn/components/ui/input"
 import { Button } from "../learn/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../learn/components/ui/card"
-import Lottie from "react-lottie-player"
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 import rewardAnimation from "@/public/animations/reward.json"
 
 const formSchema = z.object({
@@ -119,13 +120,14 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token")
+    const token = typeof window !== "undefined" && localStorage.getItem("auth_token");
     if (token) {
       fetchCurrentUser(token).then(() => {
-        router.push("/")
-      })
+        router.push("/");
+      });
     }
-  }, [router])
+  }, [router]);
+  
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
