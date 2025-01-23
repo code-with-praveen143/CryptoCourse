@@ -35,7 +35,7 @@ export default function SignupForm() {
     }
 
     try {
-      const response = await fetch("/api/signup", {
+      const response = await fetch("http://localhost:5000/user/signup", {
         method: "POST",
         body: form,
         headers: {

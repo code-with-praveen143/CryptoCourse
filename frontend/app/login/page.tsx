@@ -109,11 +109,10 @@ export default function LoginPage() {
 
       await fetchCurrentUser(result.accessToken)
       await logLoginActivity(result.id)
-      setTimeout( () => {
+      setTimeout(() => {
         router.push("/")
-
-      },3000)
-     } catch (err) {
+      }, 3000)
+    } catch (err) {
       setError("Failed to login. Please try again later.")
       console.error("Login error:", err)
     }
@@ -127,86 +126,87 @@ export default function LoginPage() {
       });
     }
   }, [router]);
-  
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-        <Card className="w-full max-w-md shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800">
-          <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
-              <Bitcoin className="h-12 w-12 text-yellow-500" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-center">Login to Token Disc</CardTitle>
-            <CardDescription className="text-center text-gray-600 dark:text-gray-400">
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Username
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    className="pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
-                    {...register("username")}
-                  />
-                </div>
-                {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username.message}</p>}
+      {!showRewardPopup && (
+        <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <Card className="w-full max-w-md shadow-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800">
+            <CardHeader className="space-y-1">
+              <div className="flex justify-center mb-4">
+                <Bitcoin className="h-12 w-12 text-yellow-500" />
               </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
-                    {...register("password")}
-                  />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-500"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </button>
+              <CardTitle className="text-2xl font-bold text-center">Login to Token Disc</CardTitle>
+              <CardDescription className="text-center text-gray-600 dark:text-gray-400">
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Enter your username"
+                      className="pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                      {...register("username")}
+                    />
+                  </div>
+                  {errors.username && <p className="mt-1 text-sm text-red-500">{errors.username.message}</p>}
                 </div>
-                {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="pl-10 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500"
+                      {...register("password")}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-500"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>}
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md shadow-md"
+                >
+                  Login
+                </Button>
+              </form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-2 text-sm">
+              <div className="text-center">
+                <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
+                  Forgot password?
+                </a>
               </div>
-              <Button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md shadow-md"
-              >
-                Login
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2 text-sm">
-            <div className="text-center">
-              <a href="#" className="text-blue-600 hover:underline dark:text-blue-400">
-                Forgot password?
-              </a>
-            </div>
-            <div className="text-center">
-              Don't have an account?{" "}
-              <a href="/signup" className="text-blue-600 hover:underline dark:text-blue-400">
-                Sign up
-              </a>
-            </div>
-          </CardFooter>
-        </Card>
-      </main>
+              <div className="text-center">
+                Don't have an account?{" "}
+                <a href="/signup" className="text-blue-600 hover:underline dark:text-blue-400">
+                  Sign up
+                </a>
+              </div>
+            </CardFooter>
+          </Card>
+        </main>
+      )}
       {showRewardPopup && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center p-4">
           <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
@@ -225,10 +225,6 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-      <footer className="py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-        <p>&copy; 2023 CryptoLearn. All rights reserved.</p>
-      </footer>
     </div>
   )
 }
-

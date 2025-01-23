@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 const Logs = require("../models/logs.model");
+ const TokenBlacklist = require("../models/tokenBlacklist.model");
 
 // Configure multer for file uploads
 const upload = multer({
@@ -228,5 +229,41 @@ exports.getLoggedInUser = async (req, res) => {
     res
       .status(500)
       .json({ message: "An error occurred while fetching user data." });
+  }
+};
+
+
+
+
+exports.logout = async (req, res) => {
+  try {
+    // Get the token from the request headers
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(400).json({ message: "Token is required." });
+    }
+
+    if (!token?.trim()) {
+      throw new Error("Valid token is required for logout.");
+    }
+
+    // Check if token is already blacklisted
+    const existingBlacklist = await TokenBlacklist.findOne({
+      where: { token }
+    });
+
+    if (existingBlacklist) {
+      throw new Error("Token is already invalidated.");
+    }
+
+    await TokenBlacklist.create({
+      token,
+      blacklisted_at: new Date()
+    });
+    res.status(200).json({ message: "Logged out successfully." });
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    res.status(500).json({ message: "An error occurred during logout." });
   }
 };

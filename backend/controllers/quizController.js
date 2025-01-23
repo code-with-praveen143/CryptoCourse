@@ -51,29 +51,31 @@ exports.logLoginActivity = async (req, res) => {
   try {
     const { user_id } = req.body;
 
-    const pointsEarned = 5; // Points for login
+    // Points to be added for each login
+    const pointsEarned = 5;
 
-    // Log activity
-    const activity = await Activity.create({
-      user_id,
-      type: 'login',
-      reference_id: user_id, // Reference ID for login activity
-      points: pointsEarned,
-      completed_at: new Date(),
-    });
-
-    // Update user's total points
-    const user = await User.findByIdAndUpdate(
-      user_id,
-      { last_login_date: new Date() },
-      { $inc: { balance: pointsEarned } },
-      { new: true }
-    );
-
+    // Fetch the user's current balance
+    const user = await User.findById(user_id);
     if (!user) {
       await createLog('unknown', 'Log Login Activity', 'User not found');
       return res.status(404).send({ message: 'User not found.' });
     }
+
+    // Increment the user's points balance
+    user.balance += pointsEarned;
+
+    // Update the user's last login date and save the updated balance
+    user.last_login_date = new Date();
+    await user.save();
+
+    // Log the login activity
+    const activity = await Activity.create({
+      user_id,
+      type: 'login',
+      reference_id: user_id, // Reference ID for login activity
+      points: pointsEarned, // Points earned for this activity
+      completed_at: new Date(),
+    });
 
     // Add to points ledger
     await PointsLedger.create({
@@ -82,10 +84,26 @@ exports.logLoginActivity = async (req, res) => {
       points: pointsEarned,
     });
 
-    await createLog(user.username, user.email, 'Log Login Activity', 'Successful', `Points: ${pointsEarned}`);
-    res.status(200).send({ message: 'Login activity logged successfully!', pointsEarned });
+    // Log the action
+    await createLog(
+      user.username,
+      user.email,
+      'Log Login Activity',
+      'Successful',
+      `Points Earned: ${pointsEarned}, New Balance: ${user.balance}`
+    );
+
+    // Send response
+    res.status(200).send({
+      message: 'Login activity logged successfully!',
+      pointsEarned,
+      newBalance: user.balance,
+    });
   } catch (error) {
+    // Log the error
     await createLog('unknown', 'Log Login Activity', 'Failed', error.message);
+
+    // Send error response
     res.status(500).send({ message: error.message });
   }
 };
