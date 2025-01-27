@@ -20,16 +20,18 @@ export default function RootLayout({
     const token = localStorage.getItem("auth_token");
     if (token) {
       setIsAuthenticated(true);
-    } else if (pathname !== "/login") {
-      router.replace("/login");
+    } else if (pathname !== "/login" && pathname !== "/signup") {
+      router.push("/login");
     }
   }, [pathname, router]);
 
   return (
     <html lang="en">
       <body className={inter.className}>
-        {/* Render children only if authenticated or on login page */}
-        {isAuthenticated || pathname === "/login" ? children : null}
+        {/* Allow access to login and signup pages without authentication */}
+        {isAuthenticated || pathname === "/login"  ? (
+          children
+        ) : null}
       </body>
     </html>
   );

@@ -8,6 +8,7 @@ const userRoutes = require('./routes/userRoutes')
 const exchangeRoutes = require('./routes/exchangeRoutes')
 const quizRoutes = require('./routes/quizRoutes');
 const logsRoutes = require('./controllers/logsController');
+const connectDB = require('./config/db');
  // Initialize dotenv
 dotenv.config();
 const PORT = process.env.PORT || 5000;
@@ -17,8 +18,18 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 
 // Middleware
-app.use(cors("*"));
-app.use(bodyParser.json());
+// Middleware
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // Localhost frontend
+      "https://crypto-course-one.vercel.app", // Vercel deployed frontend
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);app.use(bodyParser.json());
 
 // Routes
 app.use('/auth', authRoutes);
@@ -28,10 +39,5 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api', logsRoutes);
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.error('MongoDB connection error:', err));
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+connectDB()
+app.listen(PORT, () => console.log(`Server running on port: http://localhost:${PORT}`));

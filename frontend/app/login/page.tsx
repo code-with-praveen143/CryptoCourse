@@ -12,6 +12,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import dynamic from "next/dynamic";
 const Lottie = dynamic(() => import("react-lottie-player"), { ssr: false });
 import rewardAnimation from "@/public/animations/reward.json"
+import { BASE_URL } from "../utils/constants"
+import Link from "next/link"
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -34,7 +36,7 @@ export default function LoginPage() {
 
   const logLoginActivity = async (user_id: string) => {
     try {
-      const response = await fetch("http://localhost:5000/api/quiz/loginactivity", {
+      const response = await fetch(`${BASE_URL}/api/quiz/loginactivity`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,7 +58,7 @@ export default function LoginPage() {
 
   const fetchCurrentUser = async (token: string) => {
     try {
-      const response = await fetch("http://localhost:5000/auth/me", {
+      const response = await fetch(`${BASE_URL}/auth/me`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -84,7 +86,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +113,7 @@ export default function LoginPage() {
       await logLoginActivity(result.id)
       setTimeout(() => {
         router.push("/")
-      }, 3000)
+      }, 2000)
     } catch (err) {
       setError("Failed to login. Please try again later.")
       console.error("Login error:", err)
@@ -199,9 +201,9 @@ export default function LoginPage() {
               </div>
               <div className="text-center">
                 Don't have an account?{" "}
-                <a href="/signup" className="text-blue-600 hover:underline dark:text-blue-400">
+                <Link href="/signup" className="text-blue-600 hover:underline dark:text-blue-400">
                   Sign up
-                </a>
+                </Link>
               </div>
             </CardFooter>
           </Card>

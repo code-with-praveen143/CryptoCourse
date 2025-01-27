@@ -17,6 +17,7 @@ import {
   EOS_logo,
   XTZ_logo,
 } from "../../../../public/img";
+import { BASE_URL } from "@/app/utils/constants";
 
 // Dynamically import TradingView widget
 const AdvancedRealTimeChart = dynamic(
@@ -59,13 +60,13 @@ const Coin = () => {
 
     try {
       const priceResponse = await fetch(
-        `http://localhost:5000/exchange/coin-price/${coin}`
+        `${BASE_URL}/exchange/coin-price/${coin}`
       );
       const priceData = await priceResponse.json();
       setPrice(parseFloat(priceData.price));
 
       const infoResponse = await fetch(
-        `http://localhost:5000/exchange/coin-info/${coin}`
+        `${BASE_URL}/exchange/coin-info/${coin}`
       );
       const infoData = await infoResponse.json();
       setText(infoData.description);
@@ -79,7 +80,7 @@ const Coin = () => {
 
   const fetchBalance = async () => {
     try {
-      const response = await fetch("http://localhost:5000/user/balance", {
+      const response = await fetch(`${BASE_URL}/user/balance`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,7 +98,7 @@ const Coin = () => {
 
   const handleBuy = async () => {
     try {
-      const response = await fetch("http://localhost:5000/user/buy", {
+      const response = await fetch(`${BASE_URL}/user/buy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +125,7 @@ const Coin = () => {
 
   const handleSell = async () => {
     try {
-      const response = await fetch("http://localhost:5000/user/sell", {
+      const response = await fetch(`${BASE_URL}/user/sell`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

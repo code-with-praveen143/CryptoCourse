@@ -1,16 +1,17 @@
-'use client'
-import React, { useState } from "react";
-
+'use client';
+import React, { useState } from 'react';
+import { BASE_URL } from '../utils/constants';
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
+    username: '',
+    email: '',
+    password: '',
   });
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,27 +26,42 @@ export default function SignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
+    setSuccess(false);
 
     const form = new FormData();
-    form.append("username", formData.username);
-    form.append("email", formData.email);
-    form.append("password", formData.password);
+    form.append('username', formData.username);
+    form.append('email', formData.email);
+    form.append('password', formData.password);
     if (profilePicture) {
-      form.append("profile_picture", profilePicture);
+      form.append('profile_picture', profilePicture);
     }
 
     try {
-      const response = await fetch("http://localhost:5000/user/signup", {
-        method: "POST",
-        body: form,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const response = await fetch(`${BASE_URL}/auth/signup`, {
+        method: 'POST',
+        body: form, // No need to set headers manually for multipart/form-data
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Signup failed');
+      }
+
       setSuccess(true);
-      console.log(response);
+      console.log('Signup successful:', result);
+
+      // Reset the form after successful signup
+      setFormData({
+        username: '',
+        email: '',
+        password: '',
+      });
+      setProfilePicture(null);
     } catch (error) {
-      console.error(error);
+      console.error('Error during signup:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -122,14 +138,18 @@ export default function SignupForm() {
           type="submit"
           disabled={loading}
           className={`w-full bg-blue-500 text-white p-2 rounded-md transition-all duration-300 ${
-            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-600"
+            loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
           }`}
         >
-          {loading ? "Signing Up..." : "Sign Up"}
+          {loading ? 'Signing Up...' : 'Sign Up'}
         </button>
 
         {success && (
           <p className="mt-4 text-green-500 text-center">Signup successful!</p>
+        )}
+
+        {error && (
+          <p className="mt-4 text-red-500 text-center">{error}</p>
         )}
       </form>
     </div>

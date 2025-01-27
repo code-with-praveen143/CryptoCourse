@@ -12,6 +12,7 @@ import {
 import Image from "next/image";
 import Profile from "../../../public/images/Profile.jpeg";
 import { useRouter } from "next/navigation";
+import { BASE_URL } from "@/app/utils/constants";
 
 
 const categories = [
@@ -38,7 +39,7 @@ export default function Header() {
   const fetchPoints = useCallback(async (user_id) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/user/points/${user_id}`,
+        `${BASE_URL}/user/points/${user_id}`,
         {
           method: "GET",
           headers: {

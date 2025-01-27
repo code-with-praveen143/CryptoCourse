@@ -15,6 +15,7 @@ import {
 } from "./learn/components/ui/dropdown-menu";
 import Profile from "../public/images/Profile.jpeg";
 import { useRouter } from "next/navigation";
+import { BASE_URL } from "./utils/constants";
 
 const cardData = [
   {
@@ -58,7 +59,7 @@ const HomePage = () => {
   const fetchPoints = useCallback(async (user_id) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/user/points/${user_id}`,
+        `${BASE_URL}/user/points/${user_id}`,
         {
           method: "GET",
           headers: {
@@ -102,7 +103,7 @@ const HomePage = () => {
   const handleLogout = async () => {
     try {
       // Call the backend logout endpoint
-      const response = await fetch("http://localhost:5000/auth/logout", {
+      const response = await fetch(`${BASE_URL}/auth/logout`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
@@ -122,7 +123,7 @@ const HomePage = () => {
         setIsLoggedIn(false);
 
         // Redirect to login page
-        router.push("/login");
+        router.push("/signup");
       } else {
         console.error("Logout failed:", response.statusText);
       }

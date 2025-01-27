@@ -28,6 +28,7 @@ import {
   XTZ_logo,
 } from "../../../public/img";
 import Image from "next/image";
+import { BASE_URL } from "@/app/utils/constants";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -80,17 +81,14 @@ export default function Dashboard() {
 
   const fetchUserValue = async (username) => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/user/portfolio-value",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          body: JSON.stringify({ username }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/user/portfolio-value`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify({ username }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch user value");
@@ -125,7 +123,7 @@ export default function Dashboard() {
         coins.map(async ({ coin }) => {
           try {
             const response = await fetch(
-              `http://localhost:5000/exchange/coin-price/${coin}`
+              `${BASE_URL}/exchange/coin-price/${coin}`
             );
             const price = await response.json();
             pricesMap.set(coin, parseFloat(price).toFixed(2)); // Store price in pricesMap
@@ -139,7 +137,7 @@ export default function Dashboard() {
       console.log("Prices Map:", pricesMap); // Debugging prices
 
       // Fetch user balances
-      const response = await fetch("http://localhost:5000/user/balance", {
+      const response = await fetch(`${BASE_URL}/user/balance`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -198,15 +196,15 @@ export default function Dashboard() {
   return (
     <Container fluid className="bg-white text-black min-h-screen p-0">
       <div className="bg-[#ffffff] p-6 rounded-lg border border-gray-700 shadow-lg">
-      <h1 className="text-4xl font-bold mb-4 text-center">
+        <h1 className="text-4xl font-bold mb-4 text-center">
           Hello 👋 {user.username}
         </h1>
         <h2 className="text-center text-[26px] text-gray-400 mb-2">
           Welcome to the TokenDisc
         </h2>
         <p className="text-center text-gray-400 mb-12">
-          Explore our demo trading platform for more information about
-          trading, and connect with a vibrant community.
+          Explore our demo trading platform for more information about trading,
+          and connect with a vibrant community.
         </p>
         <h2 className="text-center text-dark text-3xl font-semibold mb-6">
           Available Coins

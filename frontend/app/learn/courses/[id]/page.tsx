@@ -8,6 +8,7 @@ import courses from "@/app/data/course";
 import Profile from "../../../../public/alternative_placeholder.svg";
 import { Clock } from "lucide-react";
 import { User } from "@/app/types/type";
+import { BASE_URL } from "@/app/utils/constants";
 
 // Define TypeScript interfaces for the course and lessons
 interface QuizQuestion {
@@ -67,7 +68,7 @@ export default function Course() {
 
   const fetchCurrentUser = async (token: string) => {
     try {
-      const response = await fetch("http://localhost:5000/auth/me", {
+      const response = await fetch(`${BASE_URL}/auth/me`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -100,7 +101,7 @@ export default function Course() {
       const score = correctAnswers.length;
   
       try {
-        const response = await fetch('http://localhost:5000/api/quiz/complete', {
+        const response = await fetch(`${BASE_URL}/api/quiz/complete`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
