@@ -123,7 +123,7 @@ const HomePage = () => {
         setIsLoggedIn(false);
 
         // Redirect to login page
-        router.push("/signup");
+        router.push("/login");
       } else {
         console.error("Logout failed:", response.statusText);
       }
