@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 const Logs = require("../models/logs.model");
+const Admin = require("../models/admin.model");
+
  const TokenBlacklist = require("../models/tokenBlacklist.model");
 
 // Configure multer for file uploads
@@ -112,11 +114,12 @@ exports.register = [
   },
 ];
 
-// Log in an existing user (unchanged)
+ 
+
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
+    console.log(username,password)
     // Ensure username and password are provided
     if (!username || !password) {
       await Logs.create({
@@ -131,71 +134,102 @@ exports.login = async (req, res) => {
         .json({ message: "Username and password are required." });
     }
 
-    // Find the user in the database
+    // === Step 1: Check in Admin Model ===
+    const admin = await Admin.findOne({ username }).exec();
+    let userType = "admin"; // Default role
+
+    if (admin) {
+      // Validate password
+      const passwordIsValid = await bcrypt.compare(password, admin.password);
+      if (!passwordIsValid) {
+        await Logs.create({
+          username,
+          email: admin.email || "N/A",
+          time: new Date(),
+          action: "Login",
+          status: "Invalid password",
+        });
+        return res.status(401).json({ message: "Invalid password." });
+      }
+
+      // Generate token for admin
+      const token = jwt.sign(
+        { id: admin._id, role: userType, email: admin.email },
+        process.env.SECRET,
+        { expiresIn: "24h" }
+      );
+
+      // Log successful admin login
+      await Logs.create({
+        username,
+        email: admin.email || "N/A",
+        time: new Date(),
+        action: "Login",
+        status: "Successful (Admin)",
+      });
+
+      return res.status(200).json({
+        id: admin._id,
+        username: admin.username,
+        email: admin.email,
+        role: userType,
+        accessToken: token,
+      });
+    }
+
+    // === Step 2: Check in User Model ===
     const user = await User.findOne({ username }).exec();
-    if (!user) {
-      await Logs.create({
-        username,
-        email: req.body.email || "N/A",
-        time: new Date(),
-        action: "Login",
-        status: "User not found",
-      });
-      return res.status(404).json({ message: "User not found." });
-    }
+    userType = "user"; // Update role
 
-    // Ensure user has a password
-    if (!user.password_hash) {
-      await Logs.create({
-        username,
-        email: user.email || "N/A",
-        time: new Date(),
-        action: "Login",
-        status: "User password is missing in the database",
-      });
-      return res
-        .status(500)
-        .json({ message: "User password is missing in the database." });
-    }
+    if (user) {
+      // Validate password
+      const passwordIsValid = await bcrypt.compare(password, user.password_hash);
+      if (!passwordIsValid) {
+        await Logs.create({
+          username,
+          email: user.email || "N/A",
+          time: new Date(),
+          action: "Login",
+          status: "Invalid password",
+        });
+        return res.status(401).json({ message: "Invalid password." });
+      }
 
-    // Validate the password
-    const passwordIsValid = await bcrypt.compare(password, user.password_hash);
+      // Generate token for user
+      const token = jwt.sign(
+        { id: user._id, role: userType, email: user.email },
+        process.env.SECRET,
+        { expiresIn: "24h" }
+      );
 
-    if (!passwordIsValid) {
+      // Log successful user login
       await Logs.create({
         username,
         email: user.email || "N/A",
         time: new Date(),
         action: "Login",
-        status: "Invalid password",
+        status: "Successful (User)",
       });
-      return res.status(401).json({
-        accessToken: null,
-        message: "Invalid password.",
+
+      return res.status(200).json({
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: userType,
+        accessToken: token,
       });
     }
 
-    // Generate a JWT token
-    const token = jwt.sign({ id: user.id }, process.env.SECRET, {
-      expiresIn: "24h", // 24 hours
-    });
-
-    // Log successful login
+    // If neither admin nor user is found
     await Logs.create({
       username,
-      email: user.email || "N/A",
+      email: req.body.email || "N/A",
       time: new Date(),
       action: "Login",
-      status: "Successful",
+      status: "User not found",
     });
+    return res.status(404).json({ message: "User not found." });
 
-    // Send response
-    return res.status(200).json({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      accessToken: token,
-    });
   } catch (error) {
     console.error("Login error:", error);
     await Logs.create({
@@ -210,29 +244,30 @@ exports.login = async (req, res) => {
   }
 };
 
+
 exports.getLoggedInUser = async (req, res) => {
   try {
-    // Retrieve the user ID from the middleware
     const userId = req.user.id;
+    const userRole = req.user.role;
 
-    // Fetch the user from the database (excluding sensitive data)
-    const user = await User.findById(userId).select("-password_hash");
+    let user;
+
+    if (userRole === "admin") {
+      user = await Admin.findById(userId).select("-password");
+    } else {
+      user = await User.findById(userId).select("-password_hash");
+    }
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Return user details
     res.status(200).json({ user });
   } catch (error) {
     console.error("Error fetching logged-in user:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching user data." });
+    res.status(500).json({ message: "An error occurred while fetching user data." });
   }
 };
-
-
 
 
 exports.logout = async (req, res) => {

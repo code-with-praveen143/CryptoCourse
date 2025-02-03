@@ -8,6 +8,7 @@ const userRoutes = require('./routes/userRoutes')
 const exchangeRoutes = require('./routes/exchangeRoutes')
 const quizRoutes = require('./routes/quizRoutes');
 const logsRoutes = require('./controllers/logsController');
+const adminRoutes = require('./routes/adminRoutes');
 const connectDB = require('./config/db');
  // Initialize dotenv
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/user', userRoutes);
 app.use('/exchange', exchangeRoutes);
 app.use('/api/quiz', quizRoutes);
 app.use('/api', logsRoutes);
+app.use("/api/admin", adminRoutes);
 
 // MongoDB Connection
 connectDB()
